@@ -1,0 +1,171 @@
+<style>
+	.cell {
+		width: 100px;
+		height: 100px;
+		background-color: green;
+		display: inline-block;
+		border: solid 1px white;
+		vertical-align: middle;
+
+		line-height: 100px;
+		font-size: 50px;
+		text-align: center;
+	}
+</style>
+
+<div id="board"></div>
+
+<script type="text/javascript">
+	// 1.创建一个存放棋盘的变量 
+	let pattern = [
+		[0, 0, 2],
+		[0, 1, 0],
+		[0, 0, 0],
+	];
+	console.log(pattern);
+
+	let color = 1;
+
+	// 2.创建棋盘
+	function show() {
+		let board = document.getElementById('board');
+		board.innerHTML = '';
+
+		for(let i = 0; i < 3; i++) {
+			for(let j = 0; j < 3; j++){
+				let cell = document.createElement('div');
+				cell.classList.add('cell');
+				cell.innerText =
+					pattern[i][j] == 2 ? 'X' :
+					pattern[i][j] == 1 ? 'O' : '';
+				cell.addEventListener('click', () => move(j, i));	
+				board.appendChild(cell);
+			}
+			board.appendChild(document.createElement('br'));
+		}
+	}
+
+	// 3.追加 点击事件，下棋功能
+	function move(x, y) {
+		pattern[y][x] = color;
+		if (check(pattern, color)) {
+			alert(color == 2 ? 'X is winner' : 'O is winner');
+		}
+		color = 3 - color;
+		
+		show();
+		if (willWin(pattern, color)) {
+			console.log(color == 2 ? 'X will win' : 'O will win');
+		}
+	}
+
+	// 4.判断胜利条件
+	function check(pattern, color) {
+		// 3行 判断是否一样
+		for(let i = 0; i < 3; i++) {
+			let win = true;
+			for(let j = 0; j < 3; j++) {
+				if(pattern[i][j] !== color) {
+					win = false;
+				}
+			}
+			if (win) {
+				return true;
+			}
+		}
+		// 3列 判断是否一样
+		for(let i = 0; i < 3; i++) {
+			let win = true;
+			for(let j = 0; j< 3; j++) {
+				if (pattern[j][i] !== color) {
+					win = false;
+				}
+			}
+			if (win) {
+				return true;
+			}
+		}
+		// 斜向 从右上->左下 判断是否一样
+		{
+			let win = true;
+			for(let j = 0; j < 3; j++) {
+				if (pattern[j][2 - j] !== color) {
+					win = false;
+				}
+			}
+			if (win) {
+				return true;
+			}
+		}
+		// 斜向 从左上->右下 判断是否一样
+		{
+			let win = true;
+			for(let j = 0; j < 3; j++) {
+				if (pattern[j][j] !== color) {
+					win = false;
+				}
+			}
+			if (win) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// 克隆原数组，不破坏原来的数组
+	function clone(pattern) {
+		return JSON.parse(JSON.stringify(pattern));
+	}
+
+	// 5.即将胜利的提示
+	function willWin(pattern, color) {
+		for(let i = 0; i < 3; i++) {
+			for(let j = 0; j < 3; j++) {
+				// 如果这个位置 不等于空字符串，就直接跳过
+				if (pattern[i][j]) continue;
+
+				let tmp = clone(pattern);
+				tmp[i][j] = color;
+				if(check(tmp, color)) {
+					return [j, i];
+				}
+
+			}
+		}
+		return null;
+	}
+
+	// 6.计算更好的选择， 要赢，别输
+	function bestChoice(pattern, color) {
+		let p; 
+		if (p = willWin(pattern, color)) {
+			return {
+				point: p,
+				result: 1, // -1: 输 ，1: 赢 ，0: 和
+			}
+		}
+		let result = -2;
+		let point = null;
+		for(let i = 0; i < 3; i++) {
+			for(let j = 0; j < 3; j++) {
+				if (pattern[i][j]) continue;
+				let tmp = clone(pattern);
+				tmp[i][j] = color;
+				// r 表示 我方最好的结果
+				let r = bestChoice(tmp, 3 - color).result;
+
+				if (- r > result) {
+					result = - r;
+					point = [j, i];
+				}
+			}
+		}
+		return {
+			point: point,
+			result: point ? result : 0,
+		}
+	}
+
+	show(pattern);
+	console.log(bestChoice(pattern, color));
+</script>
