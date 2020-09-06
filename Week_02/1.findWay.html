@@ -1,0 +1,70 @@
+<style>
+  .cell {
+    display: inline-block;
+    line-height: 7px;
+    width: 6px;
+    height: 6px;
+    background-color: gray;
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+    vertical-align: top;
+  }
+
+  #container {
+    width: 701px;
+  }
+</style>
+
+<div id="container">
+
+</div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)" >save</button>
+
+<script>
+// 第一课： 创建地图的构造器
+
+
+  // 1. 首先需要设计一个数据结构去保存这个地图，初始化长度为10000的数组，并进行fill
+  let map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0);
+
+  // 2. 获取dom对象
+  let container = document.getElementById('container');
+  // 3. 往地图里填格子
+  for(let y = 0; y < 100; y++) {
+    for(let x = 0; x < 100; x++) {
+      let cell = document.createElement('div');
+      cell.classList.add('cell');
+
+      if (map[100*y + x] == 1) { // 用一维数组 表现 二维矩阵的技巧，同余的特性， 1：表示有墙，0：表示无墙
+        cell.style.backgroundColor = 'black';
+      }
+
+      cell.addEventListener('mousemove', () => {
+        if (mousedown) {
+          if (clear) {
+            cell.style.backgroundColor = '';
+            map[100*y + x] = 0;
+          } else {
+            cell.style.backgroundColor = 'black';
+            map[100*y + x] = 1; // 用一维数组[10000] 表现 二维数组[100][100]的技巧
+          }
+        }
+      });
+      container.appendChild(cell);
+    }
+  }
+
+  let mousedown = false; // 鼠标按下
+  let clear = false; // 表示 右键清除
+  document.addEventListener('mousedown', (e) => {
+    mousedown = true;
+    clear = (e.which === 3); // 通过event的参数which 判断 是否 按下 右键， 是的话，就将clear 置为 3
+  });
+  document.addEventListener('mouseup', () => { mousedown = false});
+  document.addEventListener('contextmenu', (e) => {e.preventDefault()}); // 屏蔽掉 鼠标右键弹出菜单的事件
+
+  function path(map, start, end) {
+
+  }
+</script>

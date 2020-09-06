@@ -1,0 +1,115 @@
+<style>
+  .cell {
+    display: inline-block;
+    line-height: 7px;
+    width: 6px;
+    height: 6px;
+    background-color: gray;
+    border-bottom: solid 1px white;
+    border-right: solid 1px white;
+    vertical-align: top;
+  }
+
+  #container {
+    width: 701px;
+  }
+</style>
+
+<div id="container"></div>
+
+<button onclick="localStorage['map'] = JSON.stringify(map)" >save</button>
+
+<script>
+// 第一课： 创建地图的构造器
+// 第二课： 判断路径是否可以走得通，从起点到终点，采用广度优先算法实现
+// 第三课： 实现 代码的调试 可视化观察路径
+
+  // 1. 首先需要设计一个数据结构去保存这个地图，初始化长度为10000的数组，并进行fill
+  let map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0);
+
+  // 2. 获取dom对象
+  let container = document.getElementById('container');
+  // 3. 往地图里填格子
+  for(let y = 0; y < 100; y++) {
+    for(let x = 0; x < 100; x++) {
+      let cell = document.createElement('div');
+      cell.classList.add('cell');
+
+      if (map[100*y + x] == 1) { // 用一维数组 表现 二维矩阵的技巧，同余的特性， 1：表示有墙，0：表示无墙
+        cell.style.backgroundColor = 'black';
+      }
+
+      cell.addEventListener('mousemove', () => {
+        if (mousedown) {
+          if (clear) {
+            cell.style.backgroundColor = '';
+            map[100*y + x] = 0;
+          } else {
+            cell.style.backgroundColor = 'black';
+            map[100*y + x] = 1; // 用一维数组[10000] 表现 二维数组[100][100]的技巧
+          }
+        }
+      });
+      container.appendChild(cell);
+    }
+  }
+
+  let mousedown = false; // 鼠标按下
+  let clear = false; // 表示 右键清除
+  document.addEventListener('mousedown', (e) => {
+    mousedown = true;
+    clear = (e.which === 3); // 通过event的参数which 判断 是否 按下 右键， 是的话，就将clear 置为 3
+  });
+  document.addEventListener('mouseup', () => { mousedown = false});
+  document.addEventListener('contextmenu', (e) => {e.preventDefault()}); // 屏蔽掉 鼠标右键弹出菜单的事件
+
+// ---------------------------------- 以上 是 纯 地图编辑器功能 ------------------------------------------------------------
+
+  // 实现异步操作
+  function sleep(t) {
+    return new Promise(function(resolve) {
+      setTimeout(resolve, t);
+    });
+  }
+
+  // 【逻辑】寻路 bfs 广度优先搜索
+  async function path(map, start, end) {
+    // 广度优先搜索的灵魂，设置一个数组，存放要操作的点位集合
+    var quene = [start];
+
+    // 设置墙（障碍物） 入队的逻辑
+    async function insert(x, y) {
+      // 1.0 设置边界 越界情况
+      if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+        return;
+      }
+
+      // 1.1 选中的格子已经是1，或者是别的状态(下面的2)，反正不是0，这个时候不做处理，直接结束该方法
+      // 状态是2的话，表示是已经搜索过的点。不再去重复查找
+      if (map[y * 100 + x]) return;
+
+      // 实现代码的可视化观察
+      await sleep(30);
+      container.children[y * 100 + x].style.backgroundColor = 'lightgreen';
+
+      // 1.2 找到了可以操作的点，先给它做个标记，把状态设置成2，避免重复遍历
+      // 1.3 将这个点放入数组中
+      map[y * 100 + x] = 2;
+      quene.push([x, y]);
+    }
+
+    // 广度优先遍历 核心代码
+    while(quene.length) {
+      let [x,y] = quene.shift(); // shift() 用于把数组的第一个元素从其中删除，并返回第一个元素的值。 当队列处理，出队
+      // console.log(x, y);
+      if (x === end[0] && y === end[1]) {
+        return true;
+      }
+      await insert(x - 1, y);
+      await insert(x , y - 1);
+      await insert(x + 1, y);
+      await insert(x, y + 1);
+    }
+    return false;
+  }
+</script>
