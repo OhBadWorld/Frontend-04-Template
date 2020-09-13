@@ -1,0 +1,65 @@
+<script>
+  // 标识对象属性，表明对象支持的功能,避免名字冲突
+  let $ = Symbol('$');
+  class Trie {
+    constructor() {
+      // 使用null 作为字典树的原型，避免来自原型上的污染
+      this.root = Object.create(null);
+    }
+    // 1.0 插入方法，将字符串插入到字典树上
+    insert(word) {
+      // 1.1 定义一个子树
+      let node = this.root;
+      // 1.2 遍历字符串
+      for(let c of word) {
+        // 1.2.0 如果字符串的字符在子树上的键不存在，就创建
+        if (!node[c])
+          node[c] = Object.create(null);
+        // 1.2.1 存在，则把字符放在子树的键上  
+        node = node[c];
+      }
+      // 1.3 字符串插入完后，用 $ 做终止符
+      if (!($ in node))
+        node[$] = 0;
+
+      node[$]++;
+    }
+    // 2.0 得到出现最多字符的方法，递归
+    most() {
+      // 2.1 计数，记录出现最多单词的次数
+      let max = 0;
+      // 2.2 存放最终的结果单词
+      let maxWord = null;
+      // 2.3.0 递归
+      let visit = (node, word) => {
+        //  2.3.1 递归截止条件
+        if (node[$] && node[$] > max) {
+          max = node[$];
+          maxWord = word;
+        }
+        // 2.3.2 更深一层的递归
+        for(let p in node) {
+          visit(node[p], word + p);
+        }
+      }
+      visit(this.root, '');
+      console.log(maxWord, max);
+    }
+  }
+
+  // 产生一个随机的单词
+  function randomWord(length) {
+    var S = '';
+    for(let i = 0; i < length; i++) {
+      S += String.fromCharCode(Math.random() * 26 + 'a'.charCodeAt(0));
+    }
+    return S;
+  }
+  // 创建一个字典树
+  let trie = new Trie();
+
+  // 插入 100000个字符
+  for(let i = 0; i < 100000; i++) {
+    trie.insert(randomWord(4));
+  }  
+</script>
