@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>逆序操作</title>
+</head>
+<body>
+  <div id="a">
+    <span>1</span>
+    <p>2</p>
+    <a>3</a>
+    <div>4</div>
+  </div>
+</body>
+<script>
+  // 逆序 了解HTML api的做法
+let element = document.getElementById('a');
+
+function reverseChildren(element) {
+  // childNodes 是一个 living collection
+  var l = element.childNodes.length;
+  // living collection 从后往前循环
+  // 后面的元素挪掉不会影响前面的元素   不用再开一个数组
+  while(l-- > 0) {
+    element.appendChild(element.childNodes[l]);
+  }
+}
+
+reverseChildren(element);
+
+</script>
+</html>

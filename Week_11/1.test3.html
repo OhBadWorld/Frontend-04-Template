@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>逆序操作</title>
+</head>
+<body>
+  <div id="a">
+    <span>1</span>
+    <p>2</p>
+    <a>3</a>
+    <div>4</div>
+  </div>
+</body>
+<script>
+  // 逆序 使用HTML的 range api
+let element = document.getElementById('a');
+
+function reverseChildren(element) {
+  let range = new Range();
+  range.selectNodeContents(element);
+
+  // 只进行2次重排的操作，性能较高
+  // 将要操作的元素从 DOM树种摘下来，进行一次重排
+  let fragment = range.extractContents();
+  var l = fragment.childNodes.length;
+
+  // 处理摘下来的元素们
+  while(l-- > 0) {
+    fragment.appendChild(fragment.childNodes[l]);
+  }
+  // 处理完了添加到DOM树上,  进行一次重排
+  element.appendChild(fragment);
+}
+
+reverseChildren(element);
+
+</script>
+</html>
